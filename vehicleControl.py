@@ -53,8 +53,7 @@ class vehicleoControlAPI:
         listener.start()
         listener.join()
 
-        # 键盘控制方法，根据不同按键进行车辆控制
-
+    # 键盘控制方法，根据不同按键进行车辆控制
     def __keyboardControl__(self):
 
         def on_press(key):

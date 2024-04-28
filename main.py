@@ -1,9 +1,7 @@
-import time
-import math
-import os
 import contextlib
-import sys
-import json
+import os
+import time
+
 import config
 from socket_config import *
 from vehicleControl import *
@@ -11,6 +9,7 @@ from vehicleControl import *
 print(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sceneInfoOutputGap = config.sceneInfoOutputGap
+
 
 def maintain_stop(apiList, vehicleoControl1):
     """
@@ -31,29 +30,33 @@ def main():
     vehicleoControl1 = vehicleoControlAPI(0, 0, 0)  # 控制初始化
     socketServer = SocketServer()
     socketServer.socket_connect()
+
     # 获取当前时间并格式化
     current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
     filename = f"debug_{current_time}.txt"
+
     with open(filename, "a", encoding="utf-8") as f:
         with contextlib.redirect_stdout(f):
             while True:
                 dataState, apiList = socketServer.socket_launch()
+
                 if dataState:
-                    if apiList != None:
+                    if apiList is not None:
                         if loop_counter % sceneInfoOutputGap == 1:
                             print("\n\nInfo begin:")
                             apiList.showAllState()
                             print("gear mode: ", vehicleoControl1.gear)
 
-                if dataState and loop_counter == 0:
-                    socketServer.socket_respond()
+                    if loop_counter == 0:
+                        socketServer.socket_respond()
 
-                elif dataState and apiList.messageState() and loop_counter != 0:
-                    # 调用直行算法函数，传入当前的apiList和vehicleoControl对象
-                    control_dict_demo = maintain_stop(apiList, vehicleoControl1)
+                    elif apiList.messageState() and loop_counter != 0:
+                        # 调用直行算法函数，传入当前的apiList和vehicleoControl对象
+                        control_dict_demo = maintain_stop(apiList, vehicleoControl1)
 
-                    # 发送控制命令给仿真环境
-                    socketServer.socket_send(control_dict_demo)
+                        # 发送控制命令给仿真环境
+                        socketServer.socket_send(control_dict_demo)
+
                 loop_counter += 1
 
 

@@ -1,11 +1,10 @@
+import json
 import socket
 import sys
-import json
+
 from sceneInfo import APIList
 
-from tabulate import tabulate
 key = "yuandongli202311"
-
 
 class SocketServer():
     def __init__(self):

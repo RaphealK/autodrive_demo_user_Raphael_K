@@ -1,13 +1,5 @@
-import time
-import math
-
-
 import os
 
-import sys
-
-
-import json
 import config
 from socket_config import *
 from vehicleControl import *
@@ -19,8 +11,6 @@ sceneInfoOutputGap = config.sceneInfoOutputGap
 import math
 
 def straight_drive_algorithm(apiList, vehicleoControl):
-    desired_speed = 10
-
     current_position = apiList.DataGnssAPI()
 
     if not hasattr(vehicleoControl, 'start_position_x'):
@@ -32,10 +22,10 @@ def straight_drive_algorithm(apiList, vehicleoControl):
 
     if distance_traveled < 50:
         vehicleoControl.__steeringSet__(steering=0)
-        vehicleoControl.__throttleSet__(throttle=desired_speed, speed=current_position['velX'])
+        vehicleoControl.__throttleSet__(throttle=1)
     else:
         vehicleoControl.__throttleSet__(throttle=0)
-        vehicleoControl.__brakeSet__(brake=100)
+        vehicleoControl.__brakeSet__(brake=1)
 
     control_command = json_encoder(vehicleoControl)
     return json.dumps(control_command)
