@@ -48,7 +48,8 @@ class vehicleoControlAPI:
             print("steer: ", self.steering, steering, yaw)
 
     # 初始化键盘监听器，用于键盘控制模式
-    def __listenerInit__(self, pressState, keyboardModel=False):
+    @staticmethod
+    def __listenerInit__(pressState, keyboardModel=False):
         listener = Listener(on_press=pressState)
         listener.start()
         listener.join()

@@ -16,8 +16,7 @@ def maintain_stop(apiList, vehicleoControl1):
     在接近停止线时，保持速度和加速度为0，持续5秒。
 
     :param apiList: 来自仿真环境的API数据。
-    :param vehicleControl: 车辆控制API对象。
-    :param current_time: 当前仿真时间。
+    :param vehicleoControl1: 车辆控制API对象。
     :return: 控制命令字典的JSON字符串。
     """
     # 假设停止线的位置信息

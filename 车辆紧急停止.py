@@ -1,21 +1,15 @@
+import contextlib
 import os
-
-import sys
-
-import json
+import time
 
 import config
-
-
-import math
-
 from socket_config import *
-
 from vehicleControl import *
 
 print(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sceneInfoOutputGap = config.sceneInfoOutputGap
+
 
 def straight_drive_algorithm(apiList, vehicleoControl):
     """
@@ -55,25 +49,33 @@ def main():
     socketServer = SocketServer()
     socketServer.socket_connect()
 
-    while True:
-        dataState, apiList = socketServer.socket_launch()
-        if dataState:
-            if apiList != None:
-                if loop_counter % sceneInfoOutputGap == 1:
-                    print("\n\nInfo begin:")
-                    apiList.showAllState()
-                    print("gear mode: ", vehicleoControl1.gear)
+    # 获取当前时间并格式化
+    current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+    filename = f"debug_{current_time}.txt"
 
-        if dataState and loop_counter == 0:
-            socketServer.socket_respond()
+    with open(filename, "a", encoding="utf-8") as f:
+        with contextlib.redirect_stdout(f):
+            while True:
+                dataState, apiList = socketServer.socket_launch()
 
-        elif dataState and apiList.messageState() and loop_counter != 0:
-            # 调用直行算法函数，传入当前的apiList和vehicleoControl对象
-            control_dict_demo = straight_drive_algorithm(apiList, vehicleoControl1)
+                if dataState:
+                    if apiList is not None:
+                        if loop_counter % sceneInfoOutputGap == 1:
+                            print("\n\nInfo begin:")
+                            apiList.showAllState()
+                            print("gear mode: ", vehicleoControl1.gear)
 
-            # 发送控制命令给仿真环境
-            socketServer.socket_send(control_dict_demo)
-        loop_counter += 1
+                    if loop_counter == 0:
+                        socketServer.socket_respond()
+
+                    elif apiList.messageState() and loop_counter != 0:
+                        # 调用直行算法函数，传入当前的apiList和vehicleoControl对象
+                        control_dict_demo = straight_drive_algorithm(apiList, vehicleoControl1)
+
+                        # 发送控制命令给仿真环境
+                        socketServer.socket_send(control_dict_demo)
+
+                loop_counter += 1
 
 
 if __name__ == "__main__":

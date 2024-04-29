@@ -6,7 +6,8 @@ from sceneInfo import APIList
 
 key = "yuandongli202311"
 
-class SocketServer():
+
+class SocketServer:
     def __init__(self):
         self.__conn = None
 
@@ -31,17 +32,17 @@ class SocketServer():
         data_json = json.loads(data)
         apiList = []
         dataState = False
-        if data != None:
+        if data is not None:
             dataState = True
             print(data_json)
-            if data_json['SimCarMsg'] != None:
+            if data_json['SimCarMsg'] is not None:
                 apiList = APIList(data_json['SimCarMsg'])
 
         return dataState, apiList
 
     def socket_respond(self):
         self.__conn.send(bytes('{"code":2,"UserInfo":null,"SimCarMsg":null, "messager":""}',
-                        encoding="utf-8"))
+                               encoding="utf-8"))
 
     def socket_send(self, control_dict_demo):
         self.__conn.send(bytes(control_dict_demo, encoding="utf-8"))
