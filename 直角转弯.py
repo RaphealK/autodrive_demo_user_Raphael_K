@@ -73,7 +73,7 @@ def yaw_based_turn_algorithm(apiList, vehicleoControl):
 
 def main():
     loop_counter = 0
-    vehicleoControl1 = vehicleoControlAPI(0, 0, 0)  # 控制初始化
+    vehicleoControl1 = VehicleControlAPI(0, 0, 0)  # 控制初始化
     socketServer = SocketServer()
     socketServer.socket_connect()
 

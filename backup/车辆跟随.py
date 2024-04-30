@@ -1,4 +1,5 @@
 import contextlib
+import math
 import os
 import time
 
@@ -12,30 +13,48 @@ sceneInfoOutputGap = config.sceneInfoOutputGap
 
 
 def straight_drive_algorithm(apiList, vehicleoControl):
+    """
+
+    :param apiList: 来自仿真环境的API数据。
+    :param vehicleoControl: 车辆控制API对象。
+    :return: 控制命令字典的JSON字符串。
+
+    """
     current_position = apiList.DataGnssAPI()
+    duishouche_position_list = apiList.ObstacleEntryListAPI()
+    duishouche_position = duishouche_position_list[0]
 
-    if not hasattr(vehicleoControl, 'start_position_x'):
-        vehicleoControl.start_position_x = current_position['posX']
-        vehicleoControl.start_position_y = current_position['posY']
+    if 'velX' in duishouche_position:
 
-    distance_traveled = math.sqrt((current_position['posX'] - vehicleoControl.start_position_x) ** 2 +
-                                   (current_position['posY'] - vehicleoControl.start_position_y) ** 2)
+        v1 = duishouche_position['velY']
 
-    if distance_traveled < 50:
-        vehicleoControl.__steeringSet__(steering=0)
-        vehicleoControl.__throttleSet__(throttle=1)
+    distance_traveled = math.sqrt((current_position['posX'] - duishouche_position['posX']) ** 2 +
+                                  (current_position['posY'] - duishouche_position['posY']) ** 2)
+    print(f"  {distance_traveled}  {current_position['velX']}  {duishouche_position['velX']}  {duishouche_position['velY']}  {duishouche_position['velZ']}")
+
+    if isinstance(duishouche_position['velX'], (int, float)):
+        v1 = float(duishouche_position['velX'])
+    if isinstance(current_position['velX'], (int, float)):
+        v2 = float(current_position['velX'])
     else:
-        vehicleoControl.__throttleSet__(throttle=0)
-        vehicleoControl.__brakeSet__(brake=1)
-
+        # 如果 velX 不是有效数字，则设置默认值
+        v1 = 0
+    if distance_traveled < 8 and v2 > v1:
+            vehicleoControl.__throttleSet__(throttle=0)
+            vehicleoControl.__brakeSet__(1, 0)
+    elif distance_traveled > 13:
+            vehicleoControl.__steeringSet__(steering=0)
+            vehicleoControl.__throttleSet__(throttle=v1*1, speed=v2)
+    else:
+        vehicleoControl.__steeringSet__(steering=0)
+        vehicleoControl.__throttleSet__(throttle=v1, speed=v2)
     control_command = json_encoder(vehicleoControl)
     return json.dumps(control_command)
 
 
-
 def main():
     loop_counter = 0
-    vehicleoControl1 = vehicleoControlAPI(0, 0, 0)  # 控制初始化
+    vehicleoControl1 = VehicleControlAPI(0, 0, 0, 20)  # 控制初始化
     socketServer = SocketServer()
     socketServer.socket_connect()
 
