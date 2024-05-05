@@ -4,8 +4,8 @@ import os
 import time
 
 import config
+from Done.vehicleControl import *
 from socket_config import *
-from vehicleControl import *
 
 print(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -20,9 +20,7 @@ def yaw_based_turn_algorithm(apiList, vehicleoControl):
     :param vehicleoControl: 车辆控制API对象。
     :return: 控制命令字典的JSON字符串。
     """
-    # 直行时的期望速度
     desired_speed = 10
-
     # 获取当前车辆位置和偏航角
     current_position = apiList.DataGnssAPI()
     current_yaw = current_position['oriZ']  # 获取当前偏航角
@@ -73,7 +71,7 @@ def yaw_based_turn_algorithm(apiList, vehicleoControl):
 
 def main():
     loop_counter = 0
-    vehicleoControl1 = VehicleControlAPI(0, 0, 0)  # 控制初始化
+    vehicleoControl1 = VehicleControlAPI(0, 0, 0, 20)  # 控制初始化
     socketServer = SocketServer()
     socketServer.socket_connect()
 
@@ -99,7 +97,7 @@ def main():
                     elif apiList.messageState() and loop_counter != 0:
                         # 调用直行算法函数，传入当前的apiList和vehicleoControl对象
                         control_dict_demo = yaw_based_turn_algorithm(apiList, vehicleoControl1)
-
+                        print("raw control", control_dict_demo)
                         # 发送控制命令给仿真环境
                         socketServer.socket_send(control_dict_demo)
 

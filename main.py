@@ -1,10 +1,11 @@
 import contextlib
+import math
 import os
 import time
 
 import config
+from Done.vehicleControl import *
 from socket_config import *
-from vehicleControl import *
 
 print(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -19,9 +20,43 @@ def maintain_stop(apiList, vehicleoControl1):
     :param vehicleoControl1: 车辆控制API对象。
     :return: 控制命令字典的JSON字符串。
     """
-    # 假设停止线的位置信息
+    # 获取当前车辆位置和偏航角
+    current_position = apiList.DataGnssAPI()
+    current_yaw = current_position['oriZ']
+
+    # 初始化起点位置、目标偏航角和转向状态
+    if not hasattr(vehicleoControl1, 'start_position_x'):
+        vehicleoControl1.start_position_x = current_position['posX']
+        vehicleoControl1.start_position_y = current_position['posY']
+        vehicleoControl1.target_yaw = current_yaw + 90  # 假设初始右转90度
+        vehicleoControl1.is_turning = False
+
+    # 定义终点位置(场景测试得出)
+    end_point_x = -135
+    end_point_y = -30
+
+    # 计算从起点行驶的距离和到终点的距离
+    distance_traveled = calculate_distance(current_position['posX'], current_position['posY'],
+                                           vehicleoControl1.start_position_x, vehicleoControl1.start_position_y)
+    print(f'distance_traveled: {distance_traveled}')
+    distance_to_end = calculate_distance(current_position['posX'], current_position['posY'],
+                                         end_point_x, end_point_y)
+    print(f'distance_to_end: {distance_to_end}')
+    vehicleoControl1.__keyboardControl__()
     control_command = json_encoder(vehicleoControl1)
     return json.dumps(control_command)
+
+
+def calculate_distance(x1, y1, x2, y2):
+    """
+    计算两点之间的距离。
+    :param x1: 点 1 的 x 坐标。
+    :param y1: 点 1 的 y 坐标。
+    :param x2: 点 2 的 x 坐标。
+    :param y2: 点 2 的 y 坐标。
+    :return: 两点之间的距离。
+    """
+    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
 def main():
@@ -32,7 +67,7 @@ def main():
 
     # 获取当前时间并格式化
     current_time = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-    filename = f"debug_{current_time}.txt"
+    filename = f"./Debug/debug_{current_time}.txt"
 
     with open(filename, "a", encoding="utf-8") as f:
         with contextlib.redirect_stdout(f):
